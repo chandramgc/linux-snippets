@@ -1,0 +1,212 @@
+Linux user:
+
+artha/artha
+
+*.*.*.90	nn
+*.*.*.60	sn1
+*.*.*.70	sn2
+*.*.*.80	sn3
+
+-----------------------------------------------------------------------------------------------------
+
+sudo apt-get dist-upgrade
+
+-----------------------------------------------------------------------------------------------------
+Remove CD-ROM:
+
+Edit the sources.list file with the following command:
+
+sudo nano /etc/apt/sources.list
+
+And near the top, comment out the line that looks like this:
+
+deb cdrom:[Ubuntu-Server 9.04 _Jaunty Jackalope_ - Release i386 (20090421.1)]/ jaunty main restricted
+
+(comment is a hash (#) - so pop one of these at the start of the deb cdrom: ... line)
+
+Press Ctrl+X to exit the nano text editor, pressing y to save your changes
+
+Then finally you'll need to run:
+
+sudo apt-get update
+-----------------------------------------------------------------------------------------------------
+Install ssh service:
+
+sudo apt-get install -y openssh-server
+sudo service ssh status
+sudo nano /etc/ssh/sshd_config
+sudo service ssh restart
+
+-----------------------------------------------------------------------------------------------------
+
+Set all hostname
+
+sudo nano /etc/hostname
+
+echo 'namenode' > /etc/hostname
+
+Set all hosts
+
+sudo nano /etc/hosts
+
+*.*.*.100		namenode
+
+-----------------------------------------------------------------------------------------------------
+
+Set static ip:
+
+nano /etc/network/interfaces
+
+# The primary network interface
+auto ens33
+iface ens33 inet static
+
+address *.*.*.40
+gateway *.*.*.1
+netmask 255.255.255.0
+network *.*.*.0
+dns-search google.com
+dns-nameservers 8.8.8.8 *.*.*.1
+
+-----------------------------------------------------------------------------------------------------
+
+Disable Ivp6 (for confusion of hosts)
+
+cat /proc/sys/net/ipv6/conf/all/disable_ipv6
+0
+
+if 	0 - ipv6 enable 
+	1 - ipv6 disable
+
+echo "#disable ipv6" | sudo tee -a /etc/sysctl.conf
+echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf  
+echo "net.ipv6.conf.default.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf  
+echo "net.ipv6.conf.lo.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+shutdown -r now or sudo init 6
+
+-----------------------------------------------------------------------------------------------------
+
+Create hadoop User for ClouderManager privilages
+
+
+sudo useradd dumpuser2 -g dumpgroup -d '/home/dumpuser2' -m -p 'dumpuser2'
+
+Just follow below step:
+
+sudo addgroup hadoop
+
+sudo adduser --ingroup hadoop hduser (pwd: artha)
+
+sudo adduser hduser sudo
+
+su - hduser
+
+List of User:
+
+awk -F':' '{ print $1}' /etc/passwd
+compgen -u
+
+List of Groups:
+
+getent group
+compgen -g
+
+-----------------------------------------------------------------------------------------------------
+
+Password less authethencation
+
+su - hduser
+
+ssh localhost
+
+ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -P '' -N ''
+
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub hduser@nn
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub hduser@sn1 
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub hduser@sn2 
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub hduser@sn3
+
+-----------------------------------------------------------------------------------------------------
+
+wget http://archive.cloudera.com/cm5/installer/latest/cloudera-manager-installer.bin
+
+chmod u+x cloudera-manager-installer.bin
+
+./cloudera-manager-installer.bin
+
+-----------------------------------------------------------------------------------------------------
+
+Disable SELinux
+
+sudo apt-get install selinux-utils
+
+getenforce
+
+sudo nano /etc/selinux/config file (in some systems, the /etc/sysconfig/selinux file)
+
+SELINUX=enforcing to SELINUX=permissive
+
+setenforce 0
+
+-----------------------------------------------------------------------------------------------------
+
+http://192.168.1.101:7180/cmf/login
+
+admin
+admin
+
+-----------------------------------------------------------------------------------------------------
+Resolve error with root permissions:
+
+sudo visudo
+
+Add below line
+
+hduser ALL=(ALL:ALL) NOPASSWD: ALL
+
+-----------------------------------------------------------------------------------------------------
+
+
+Formatting the name directories of the current NameNode. If the name directories are not empty, this is expected to fail.
+
+Command (Format (50)) has failed
+
+Resolve error with name directories are not empty:
+
+retrying.. after deleting everything in /dfs by:
+
+cd /dfs
+
+rm -r -f *
+
+on each host including the CDh manager server...
+
+This actually worked!!! thanks Darren, Thanks DIO.. here are the steps when you need to reinstall from a botched delete of hive or zookeeper and the service add gives you a null pointer exception, (see my prior posts).
+
+1)  Stop the cluster
+
+2) delete the cluster
+
+3) cd /dfs on each host
+
+4) rm -r -f *
+
+5) using the manager add the cluster
+
+6) select the hosts tab and select alll hosts
+
+7) choose all the defaults and click continue to start firstrun()
+
+
+-----------------------------------------------------------------------------------------------------
+
+NFS Gateway
+
+
+service rpcbind start
+
+-----------------------------------------------------------------------------------------------------
+
+
+
+
