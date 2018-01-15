@@ -1,0 +1,16 @@
+cd /etc/mysql/mysql.conf.d/
+nano mysqld.cnf
+
+Change bind-address = '127.0.0.1' to 0.0.0.0 any IP
+bind-address        = 0.0.0.0
+
+sudo /etc/init.d/mysql restart
+/usr/bin/mysql -u root -p
+
+
+
+CREATE USER 'girish'@'192.168.1.91' IDENTIFIED BY 'Artha@568';
+GRANT ALL PRIVILEGES ON *.* TO 'girish'@'192.168.1.91' WITH GRANT OPTION;
+CREATE USER 'girish'@'%' IDENTIFIED BY 'Artha@568';
+GRANT ALL PRIVILEGES ON *.* TO 'girish'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
