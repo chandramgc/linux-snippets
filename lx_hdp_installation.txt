@@ -1,0 +1,6 @@
+Restart hdp Clustr
+
+cd /root/start_scripts/
+./start_sandbox.sh
+
+
